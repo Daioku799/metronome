@@ -140,4 +140,60 @@ describe('AudioEngineController', () => {
 
     expect(tickCallback).not.toHaveBeenCalled();
   });
+
+  describe('Complex Scenarios (Integration-like)', () => {
+    it('should handle rapid meter changes and reflect in Worker messages', () => {
+      controller.setMeter(['strong', 'weak']);
+      expect(mockWorkerInstance.postMessage).toHaveBeenLastCalledWith({
+        type: 'CONFIG',
+        config: { accents: ['strong', 'weak'] },
+      });
+
+      controller.setMeter(['strong', 'medium', 'weak']);
+      expect(mockWorkerInstance.postMessage).toHaveBeenLastCalledWith({
+        type: 'CONFIG',
+        config: { accents: ['strong', 'medium', 'weak'] },
+      });
+    });
+
+    it('should handle real-time tempo changes', () => {
+      controller.setTempo(60);
+      expect(mockWorkerInstance.postMessage).toHaveBeenLastCalledWith({
+        type: 'CONFIG',
+        config: { bpm: 60 },
+      });
+
+      controller.setTempo(200);
+      expect(mockWorkerInstance.postMessage).toHaveBeenLastCalledWith({
+        type: 'CONFIG',
+        config: { bpm: 200 },
+      });
+    });
+
+    it('should correctly sequence multiple TICK messages with different accents', () => {
+      const synthInstance = vi.mocked(AudioSynthesizer).mock.results[0].value;
+      const tickCallback = vi.fn();
+      controller.onTick(tickCallback);
+
+      const ticks = [
+        { beatIndex: 0, time: 1.0, accent: 'strong' as const },
+        { beatIndex: 1, time: 1.5, accent: 'none' as const },
+        { beatIndex: 2, time: 2.0, accent: 'medium' as const },
+        { beatIndex: 3, time: 2.5, accent: 'weak' as const },
+      ];
+
+      ticks.forEach((tick, i) => {
+        if (mockWorkerInstance.onmessage) {
+          mockWorkerInstance.onmessage({
+            data: {
+              type: 'TICK',
+              ...tick
+            },
+          } as MessageEvent);
+        }
+        expect(synthInstance.scheduleClick).toHaveBeenNthCalledWith(i + 1, tick.time, tick.accent);
+        expect(tickCallback).toHaveBeenNthCalledWith(i + 1, tick.beatIndex);
+      });
+    });
+  });
 });

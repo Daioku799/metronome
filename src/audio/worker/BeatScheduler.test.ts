@@ -82,4 +82,55 @@ describe('BeatScheduler', () => {
     scheduler.getNextBeatInfo(); // 120 BPM -> +0.5s
     expect(scheduler.nextScheduleTime).toBe(10.5);
   });
+
+  it('should ignore empty accent array and keep current accents', () => {
+    const originalAccents = ['strong', 'weak'];
+    scheduler.updateConfig({ accents: originalAccents });
+    
+    scheduler.updateConfig({ accents: [] });
+    
+    scheduler.reset(0.0);
+    expect(scheduler.getNextBeatInfo().accent).toBe('strong');
+    expect(scheduler.getNextBeatInfo().accent).toBe('weak');
+  });
+
+  it('should handle extreme tempos', () => {
+    // Very slow: 1 BPM = 60s per beat
+    scheduler.updateConfig({ bpm: 1 });
+    scheduler.reset(0.0);
+    scheduler.getNextBeatInfo();
+    expect(scheduler.getNextBeatInfo().time).toBe(60.0);
+
+    // Very fast: 1000 BPM = 0.06s per beat
+    scheduler.updateConfig({ bpm: 1000 });
+    scheduler.reset(0.0);
+    scheduler.getNextBeatInfo();
+    expect(scheduler.getNextBeatInfo().time).toBe(0.06);
+  });
+
+  it('should handle complex mixed meter sequences', () => {
+    // 7/8 time: [strong, weak, medium, weak, medium, weak, weak]
+    const complexAccents: any[] = ['strong', 'weak', 'medium', 'weak', 'medium', 'weak', 'weak'];
+    scheduler.updateConfig({ accents: complexAccents });
+    scheduler.reset(0.0);
+
+    const results = [];
+    for (let i = 0; i < complexAccents.length; i++) {
+      results.push(scheduler.getNextBeatInfo().accent);
+    }
+    expect(results).toEqual(complexAccents);
+    
+    // Check loop
+    expect(scheduler.getNextBeatInfo().accent).toBe('strong');
+  });
+
+  it('should handle "none" accent correctly', () => {
+    scheduler.updateConfig({ accents: ['strong', 'none', 'weak', 'none'] });
+    scheduler.reset(0.0);
+
+    expect(scheduler.getNextBeatInfo().accent).toBe('strong');
+    expect(scheduler.getNextBeatInfo().accent).toBe('none');
+    expect(scheduler.getNextBeatInfo().accent).toBe('weak');
+    expect(scheduler.getNextBeatInfo().accent).toBe('none');
+  });
 });

@@ -1,27 +1,47 @@
-import { WorkerMessage } from './audio/types';
+import { AudioEngineController } from './audio/AudioEngineController';
+import { AccentLevel } from './audio/types';
 
-console.log('[Main] Initializing Audio Worker...');
+console.log('--- Metronome Audio Engine Demo ---');
+console.log('Initializing AudioEngineController...');
 
-// Web Workerのインスタンス化
-const worker = new Worker(
-  new URL('./audio/worker/index.ts', import.meta.url),
-  { type: 'module' }
-);
+const controller = new AudioEngineController();
 
-worker.onmessage = (event) => {
-  console.log('[Main] Message from worker:', event.data);
-};
+// 7/8拍子の設定: [強, 弱, 中, 弱, 中, 弱, 弱]
+const mixedMeter: AccentLevel[] = ['strong', 'weak', 'medium', 'weak', 'medium', 'weak', 'weak'];
 
-// ワーカーへのメッセージ送信テスト
-worker.postMessage({ type: 'START' } as WorkerMessage);
+controller.setMeter(mixedMeter);
+controller.setTempo(140);
+controller.setVolume(0.5);
+
+controller.onTick((index) => {
+  const accent = mixedMeter[index];
+  console.log(`[Tick] Index: ${index}, Accent: ${accent}`);
+});
+
+console.log('Starting metronome in 3 seconds...');
+console.log('Meter: 7/8 (Mixed)');
+console.log('Tempo: 140 BPM');
 
 setTimeout(() => {
-  worker.postMessage({
-    type: 'CONFIG',
-    config: { bpm: 120, volume: 0.8 }
-  } as WorkerMessage);
-}, 1000);
+  console.log('START!');
+  controller.start();
 
-setTimeout(() => {
-  worker.postMessage({ type: 'STOP' } as WorkerMessage);
-}, 2000);
+  // 5秒後にテンポを上げるテスト
+  setTimeout(() => {
+    console.log('Increasing tempo to 200 BPM...');
+    controller.setTempo(200);
+  }, 5000);
+
+  // 10秒後に停止するテスト
+  setTimeout(() => {
+    console.log('STOP!');
+    controller.stop();
+    console.log('Demo completed.');
+  }, 10000);
+
+}, 3000);
+
+console.log('Instructions:');
+console.log('1. Open your browser console.');
+console.log('2. You should see "TICK" messages periodically.');
+console.log('3. In a real browser environment, click anywhere on the page if audio doesn\'t start (AudioContext policy).');
