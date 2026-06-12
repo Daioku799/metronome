@@ -66,4 +66,58 @@ describe('MeterEditor', () => {
       groupIndices: []
     }));
   });
+
+  it('adds a beat when "Add Beat" button is clicked', () => {
+    const handleChange = vi.fn();
+    render(<MeterEditor initialConfig={{ beats: ['strong'], groupIndices: [] }} onChange={handleChange} />);
+    
+    const addButton = screen.getByTestId('add-beat-button');
+    fireEvent.click(addButton);
+    
+    expect(screen.getAllByTestId('beat-cell')).toHaveLength(2);
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({
+      beats: ['strong', 'weak']
+    }));
+  });
+
+  it('deletes a beat when delete button is clicked', () => {
+    const handleChange = vi.fn();
+    render(<MeterEditor initialConfig={{ beats: ['strong', 'medium'], groupIndices: [] }} onChange={handleChange} />);
+    
+    // Initially 2 cells
+    expect(screen.getAllByTestId('beat-cell')).toHaveLength(2);
+    
+    const deleteButtons = screen.getAllByTestId('delete-beat-button');
+    fireEvent.click(deleteButtons[1]); // Delete the second beat ('medium')
+    
+    expect(screen.getAllByTestId('beat-cell')).toHaveLength(1);
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({
+      beats: ['strong']
+    }));
+  });
+
+  it('does not allow deleting the last beat', () => {
+    render(<MeterEditor initialConfig={{ beats: ['strong'], groupIndices: [] }} />);
+    
+    expect(screen.queryByTestId('delete-beat-button')).not.toBeInTheDocument();
+  });
+
+  it('updates groupIndices correctly when a beat is deleted', () => {
+    const handleChange = vi.fn();
+    // Beats: [0, 1, 2], Separator between 1 and 2 (index 1)
+    const initialConfig = {
+      beats: ['strong', 'medium', 'weak'] as any[],
+      groupIndices: [1]
+    };
+    render(<MeterEditor initialConfig={initialConfig} onChange={handleChange} />);
+    
+    const deleteButtons = screen.getAllByTestId('delete-beat-button');
+    
+    // Delete beat index 0. Separator at index 1 should shift to index 0.
+    fireEvent.click(deleteButtons[0]);
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({
+      beats: ['medium', 'weak'],
+      groupIndices: [0]
+    }));
+  });
 });
