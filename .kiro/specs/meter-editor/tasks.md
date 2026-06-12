@@ -2,8 +2,8 @@
 
 ## Tasks
 
-- [ ] 1. 基盤：プロジェクト構造と共通型の定義
-- [ ] 1.1 `src/components/meter-editor/` フォルダを作成し、アクセントレベルやメーター構成の基本型を定義する。
+- [x] 1. 基盤：プロジェクト構造と共通型の定義
+- [x] 1.1 `src/components/meter-editor/` フォルダを作成し、アクセントレベルやメーター構成の基本型を定義する。
   - `AccentLevel` (enum/union) および `MeterConfig` 型の定義。
   - 期待される成果物：`types.ts` が作成され、型エラーがない状態でコンパイルが通ること。
   - _Requirements: 4.1_
