@@ -1,3 +1,4 @@
+import './index.css';
 import { AudioEngineController } from './audio/AudioEngineController';
 import { AccentLevel } from './audio/types';
 
