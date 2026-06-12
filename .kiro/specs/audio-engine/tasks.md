@@ -36,7 +36,7 @@
   - _Requirements: 2.1, 2.2_
   - _Boundary: BeatScheduler_
 
-- [ ] 2.3 スケジューリングループの実装
+- [x] 2.3 スケジューリングループの実装
   - 25ms間隔の `setInterval` ループをWorker内に構築する
   - 「Look-ahead」方式により, 現在時刻から一定時間先までの拍を `AudioSynthesizer` にスケジュールする
   - 拍が発音されるタイミングでメインスレッドに `TICK` メッセージを送信する
