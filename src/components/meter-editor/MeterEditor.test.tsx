@@ -40,4 +40,30 @@ describe('MeterEditor', () => {
       beats: expect.arrayContaining(['medium'])
     }));
   });
+
+  it('toggles group separator when clicked', () => {
+    const handleChange = vi.fn();
+    const initialConfig = {
+      beats: ['strong', 'weak'] as any[],
+      groupIndices: []
+    };
+    render(<MeterEditor initialConfig={initialConfig} onChange={handleChange} />);
+    
+    const separator = screen.getByTestId('group-separator');
+    expect(separator).toHaveAttribute('data-active', 'false');
+    
+    // Toggle ON
+    fireEvent.click(separator);
+    expect(separator).toHaveAttribute('data-active', 'true');
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({
+      groupIndices: [0]
+    }));
+    
+    // Toggle OFF
+    fireEvent.click(separator);
+    expect(separator).toHaveAttribute('data-active', 'false');
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({
+      groupIndices: []
+    }));
+  });
 });
