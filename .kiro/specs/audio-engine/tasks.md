@@ -9,7 +9,7 @@
   - 型定義ファイルが作成され、他のコンポーネントから参照可能になる
   - _Requirements: 1.1, 3.1, 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 1.2 Web Worker実行環境の構築
+- [x] 1.2 Web Worker実行環境の構築
   - ViteなどのビルドツールでWorkerを読み込むための初期設定を行う
   - Workerのエントリポイントファイルを作成し、生存確認のログを出力する
   - メインスレッドからWorkerをインスタンス化し、通信ができることを確認する
@@ -25,7 +25,8 @@
   - `GainNode` によるマスターボリューム制御を実装する
   - 指定された時刻（AudioContext.currentTime）に正確に音を鳴らす関数が完成する
   - _Requirements: 1.1, 3.1, 3.2, 3.3_
-  - _Boundary: AudioSynthesizer_
+  - _Boundary: src/audio/AudioSynthesizer.ts_
+
 
 - [ ] 2.2 (P) 拍シーケンス・スケジューラーの実装
   - 提供されたアクセントレベルのシーケンス（例: ['strong', 'weak', 'medium', 'weak']）を元に、次の拍のアクセントを決定するロジックを実装する

@@ -53,11 +53,11 @@ graph LR
 src/
 └── audio/
     ├── AudioEngineController.ts  # メインスレッド用Facade
+    ├── AudioSynthesizer.ts       # 音声合成（Oscillator）管理 [Main Thread]
     ├── types.ts                  # 共通型定義
     └── worker/
         ├── index.ts              # Workerエントリポイント
-        ├── BeatScheduler.ts      # 拍の計算ロジック
-        └── AudioSynthesizer.ts   # 音声合成（Oscillator）管理
+        └── BeatScheduler.ts      # 拍の計算ロジック
 ```
 
 ## Requirements Traceability
@@ -98,13 +98,6 @@ interface AudioEngineController {
 }
 ```
 
-### [Worker Thread]
-
-#### BeatScheduler
-- **Intent**: 次に再生すべき拍の種類とタイミングを計算する。
-- **Requirements**: 2.1, 2.2
-- **State Management**: 現在の拍シーケンス内のインデックスを保持。
-
 #### AudioSynthesizer
 - **Intent**: AudioContextを使用して実際に音を出す。
 - **Requirements**: 3.1, 3.2, 3.3
@@ -115,6 +108,13 @@ interface AudioSynthesizer {
   setMasterVolume(value: number): void;
 }
 ```
+
+### [Worker Thread]
+
+#### BeatScheduler
+- **Intent**: 次に再生すべき拍の種類とタイミングを計算する。
+- **Requirements**: 2.1, 2.2
+- **State Management**: 現在の拍シーケンス内のインデックスを保持。
 
 ## Testing Strategy
 - **Unit Tests**:
