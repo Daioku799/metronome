@@ -23,7 +23,7 @@
   - _Requirements: 2.3_
   - _Boundary: useTapTempo_
 
-- [ ] 2.2 `useMetronome` カスタムフックの構築
+- [x] 2.2 `useMetronome` カスタムフックの構築
   - `AudioEngineController` のインスタンス化とコンポーネントのライフサイクルに合わせた管理
   - テンポ、音量、メーター構成の集中管理とエンジンへの反映メソッドの実装
   - 音声エンジンが正常に初期化され、再生・停止コマンドに応答することを確認
