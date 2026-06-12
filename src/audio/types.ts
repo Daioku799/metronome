@@ -23,7 +23,7 @@ export interface AudioConfig {
  * メインスレッドからWorkerへ送信されるメッセージの定義
  */
 export type WorkerMessage =
-  | { type: 'START' }
+  | { type: 'START'; startTime: number }
   | { type: 'STOP' }
   | { type: 'CONFIG'; config: Partial<AudioConfig> };
 
@@ -37,4 +37,6 @@ export type MainMessage =
       beatIndex: number;
       /** 発音予定のタイムスタンプ (AudioContext.currentTime) */
       time: number;
+      /** 拍のアクセントレベル */
+      accent: AccentLevel;
     };
