@@ -120,4 +120,57 @@ describe('MeterEditor', () => {
       groupIndices: [0]
     }));
   });
+
+  it('builds a complex "2+3+2" mixed meter from scratch', () => {
+    const handleChange = vi.fn();
+    // Start with 1 beat
+    render(<MeterEditor initialConfig={{ beats: ['strong'], groupIndices: [] }} onChange={handleChange} />);
+    
+    // 1. Add beats to reach 7 beats (currently 1, add 6 more)
+    const addButton = screen.getByTestId('add-beat-button');
+    for (let i = 0; i < 6; i++) {
+      fireEvent.click(addButton);
+    }
+    expect(screen.getAllByTestId('beat-cell')).toHaveLength(7);
+    
+    // Current beats: ['strong', 'weak', 'weak', 'weak', 'weak', 'weak', 'weak']
+    
+    // 2. Set accents for a typical 2+3+2 pattern (Strong on 0, 2, 5)
+    // Beat 0 is already 'strong'
+    const cells = screen.getAllByTestId('beat-cell');
+    
+    // Beat 2: 'weak' -> 'none' -> 'strong' (2 clicks)
+    fireEvent.click(cells[2]);
+    fireEvent.click(cells[2]);
+    expect(cells[2]).toHaveAttribute('data-accent', 'strong');
+    
+    // Beat 5: 'weak' -> 'none' -> 'strong' (2 clicks)
+    fireEvent.click(cells[5]);
+    fireEvent.click(cells[5]);
+    expect(cells[5]).toHaveAttribute('data-accent', 'strong');
+    
+    // 3. Set separators to create 2+3+2 (Separators after index 1 and 4)
+    const separators = screen.getAllByTestId('group-separator');
+    // separators[1] is between cells[1] and cells[2]
+    // separators[4] is between cells[4] and cells[5]
+    fireEvent.click(separators[1]);
+    fireEvent.click(separators[4]);
+    
+    // 4. Verify the final config passed to onChange
+    // The last call to onChange should contain the full config
+    expect(handleChange).toHaveBeenLastCalledWith({
+      beats: ['strong', 'weak', 'strong', 'weak', 'weak', 'strong', 'weak'],
+      groupIndices: [1, 4]
+    });
+    
+    // 5. Use delete operation as well (Task requirement: "Ensure all UI operations ... are used")
+    // Delete the last beat to make it 2+3+1
+    const deleteButtons = screen.getAllByTestId('delete-beat-button');
+    fireEvent.click(deleteButtons[6]);
+    
+    expect(handleChange).toHaveBeenLastCalledWith({
+      beats: ['strong', 'weak', 'strong', 'weak', 'weak', 'strong'],
+      groupIndices: [1, 4]
+    });
+  });
 });
