@@ -8,7 +8,7 @@
   - _Requirements: 4.1, 4.2, 4.3_
   - _Boundary: useLocalStorage_
 
-- [ ] 1.2 `meterConverter` ユーティリティの実装 (P)
+- [x] 1.2 `meterConverter` ユーティリティの実装 (P)
   - `MeterConfig` 型から音声エンジン（audio-engine）用のアクセント配列への変換ロジックの実装
   - 各拍の強弱（AccentLevel）をエンジンが解釈可能な数値配列へマッピング
   - ユニットテストにおいて、複雑な混合拍子構成が正しく変換されることを確認
