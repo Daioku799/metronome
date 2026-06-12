@@ -1,7 +1,7 @@
 # Implementation Tasks: metronome-app
 
 ## 1. 基盤: ユーティリティと永続化の構築
-- [ ] 1.1 `useLocalStorage` カスタムフックの実装 (P)
+- [x] 1.1 `useLocalStorage` カスタムフックの実装 (P)
   - ローカルストレージへの保存・読み込みロジックをカプセル化
   - 初期値の適用と状態同期ロジックの実装
   - 状態が変更された際に、自動的にLocalStorageが更新されることを確認
