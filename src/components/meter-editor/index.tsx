@@ -5,7 +5,21 @@ import { GroupSeparator } from './GroupSeparator';
 import { getNextAccentLevel } from './utils';
 
 interface MeterEditorProps {
+  /**
+   * 現在のメーター構成（制御モード用）
+   */
+  config?: MeterConfig;
+  /**
+   * 初期メーター構成（非制御モード用）
+   */
   initialConfig?: MeterConfig;
+  /**
+   * 現在アクティブな拍のインデックス
+   */
+  activeBeatIndex?: number;
+  /**
+   * 構成が変更された時のコールバック
+   */
   onChange?: (config: MeterConfig) => void;
 }
 
@@ -13,22 +27,33 @@ interface MeterEditorProps {
  * メーター（拍子）を視覚的に編集するメインコンポーネント。
  */
 export const MeterEditor: React.FC<MeterEditorProps> = ({
-  initialConfig = { beats: ['strong', 'weak', 'weak', 'weak'], groupIndices: [] },
+  config,
+  initialConfig,
+  activeBeatIndex,
   onChange,
 }) => {
-  const [beats, setBeats] = useState<AccentLevel[]>(initialConfig.beats);
-  const [groupIndices, setGroupIndices] = useState<number[]>(initialConfig.groupIndices);
+  // 内部状態。configが渡されている場合はそちらを優先する（が、簡易化のため内部状態も同期させる）
+  const defaultConfig = initialConfig || { beats: ['strong', 'weak', 'weak', 'weak'], groupIndices: [] };
+  const [internalBeats, setInternalBeats] = useState<AccentLevel[]>(defaultConfig.beats);
+  const [internalGroupIndices, setInternalGroupIndices] = useState<number[]>(defaultConfig.groupIndices);
+
+  // configプロップが提供されている場合はそれを使用し、そうでなければ内部状態を使用する
+  const beats = config ? config.beats : internalBeats;
+  const groupIndices = config ? config.groupIndices : internalGroupIndices;
 
   const notifyChange = useCallback((newBeats: AccentLevel[], newGroupIndices: number[]) => {
+    if (!config) {
+      setInternalBeats(newBeats);
+      setInternalGroupIndices(newGroupIndices);
+    }
     if (onChange) {
       onChange({ beats: newBeats, groupIndices: newGroupIndices });
     }
-  }, [onChange]);
+  }, [config, onChange]);
 
   const handleBeatClick = useCallback((index: number) => {
     const newBeats = [...beats];
     newBeats[index] = getNextAccentLevel(newBeats[index]);
-    setBeats(newBeats);
     notifyChange(newBeats, groupIndices);
   }, [beats, groupIndices, notifyChange]);
 
@@ -37,13 +62,11 @@ export const MeterEditor: React.FC<MeterEditorProps> = ({
       ? groupIndices.filter(i => i !== index)
       : [...groupIndices, index].sort((a, b) => a - b);
     
-    setGroupIndices(newGroupIndices);
     notifyChange(beats, newGroupIndices);
   }, [beats, groupIndices, notifyChange]);
 
   const handleAddBeat = useCallback(() => {
     const newBeats: AccentLevel[] = [...beats, 'weak'];
-    setBeats(newBeats);
     notifyChange(newBeats, groupIndices);
   }, [beats, groupIndices, notifyChange]);
 
@@ -51,24 +74,21 @@ export const MeterEditor: React.FC<MeterEditorProps> = ({
     if (beats.length <= 1) return;
 
     const newBeats = beats.filter((_, i) => i !== index);
-    // インデックスの再計算：削除されたビートより後のインデックスを1つ減らす
-    // 削除されたインデックス自体にあるセパレーターも削除する
     const newGroupIndices = groupIndices
       .filter(i => i !== index)
       .map(i => (i > index ? i - 1 : i));
     
-    setBeats(newBeats);
-    setGroupIndices(newGroupIndices);
     notifyChange(newBeats, newGroupIndices);
   }, [beats, groupIndices, notifyChange]);
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-sm border border-slate-200">
+    <div className="p-4 bg-white rounded-lg shadow-sm border border-slate-200" data-testid="meter-editor">
       <div className="grid grid-flow-col auto-cols-max items-end gap-1 mb-4 overflow-x-auto pb-2">
         {beats.map((accent, index) => (
           <React.Fragment key={index}>
             <BeatCell
               accent={accent}
+              isActive={activeBeatIndex === index}
               onClick={() => handleBeatClick(index)}
               onDelete={beats.length > 1 ? () => handleDeleteBeat(index) : undefined}
             />
