@@ -10,14 +10,19 @@ describe('Worker Scheduling Loop', () => {
   let onMessageCallback: ((ev: any) => void) | null = null;
 
   beforeEach(async () => {
-    postMessageSpy = vi.fn();
+    const postMessageMock = vi.fn();
+    postMessageSpy = postMessageMock;
     setIntervalSpy = vi.spyOn(global, 'setInterval');
     clearIntervalSpy = vi.spyOn(global, 'clearInterval');
 
-    vi.stubGlobal('postMessage', postMessageSpy);
+    // JSDOM 環境下での self.postMessage の挙動を抑制するため、明示的にモック
+    vi.stubGlobal('postMessage', postMessageMock);
     vi.stubGlobal('performance', { now: vi.fn(() => 1000) });
-    vi.stubGlobal('self', {
-      postMessage: postMessageSpy,
+    
+    // self 自体をモックするのではなく、必要なプロパティをグローバルに展開するか、
+    // Getter を上書きする
+    const selfMock = {
+      postMessage: postMessageMock,
       setInterval: setIntervalSpy,
       clearInterval: clearIntervalSpy,
       set onmessage(cb: any) {
@@ -26,7 +31,13 @@ describe('Worker Scheduling Loop', () => {
       get onmessage() {
         return onMessageCallback;
       }
-    });
+    };
+    vi.stubGlobal('self', selfMock);
+
+    // さらに window.postMessage もモックして、JSDOM の引数チェックを回避
+    if (typeof window !== 'undefined') {
+      vi.spyOn(window, 'postMessage').mockImplementation(postMessageMock as any);
+    }
 
     vi.resetModules();
     // ワーカースクリプトを動的にインポートして実行
